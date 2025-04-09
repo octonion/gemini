@@ -1,0 +1,171 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Probability of $|X|=|Y|$ in a 2n-Step Random Walk}
+\author{Christopher D. Long and Gemini 2.5} % Optional: You can remove or change this
+\date{\today} % Optional: Use a specific date if needed
+
+\begin{document}
+
+\maketitle % Optional: Use if you want a title page/section
+
+\section{Problem Setup}
+
+Let $(X, Y)$ be the position after $2n$ steps of a random walk on a 2D integer lattice, starting at the origin $(0,0)$. Each step is chosen independently and uniformly at random from the set $\{(+1, 0), (-1, 0), (0, +1), (0, -1)\}$. We want to find the probability $P(|X|=|Y|)$.
+
+Note the total number of possible paths is $4^{2n}$.
+
+\section{Combinatorial Argument}
+
+My initial argument was a relatively standard, if inelegant, combinatorial one. To be consistent with Gemini's argument let $n_R, n_L, n_U, n_D$ be the number of right, left, up and down steps we take in a random walk of length $2n$. The number of ways this can be achieved is $$\frac{(2n)!}{n_R! n_L! n_U! n_D!}.$$
+
+We next proceed by calculating the probability of finishing on $(m,m)$ after $2n$ steps. Note by symmetry $P(X=m,Y=m) = P(X=\pm m,Y= \pm m)$ for any choice of signs. We'll calculate the number of paths $N_{m,m}$, then our probability will be this sum divided by $4^{2n}$.
+
+\subsection{Calculating $P(X=m,Y=m)$}
+
+In order to end on $(m,m)$ the following conditions must hold:
+\begin{align*}
+  n_R+n_L+n_U+n_D = 2n & \\
+  n_R-n_L = m & \\
+  n_U-n_D = m & \\
+\end{align*}
+
+We have four equations and three unknowns, and we'll parameterize on $n_L$, giving $n_R = m+n_L, n_U = n-n_L, n_D = n-m-n_L$. Note $0 \leq n_L \leq n-m$, and the number of paths of length $2n$ starting at $(0,0)$ and ending on $(m,m)$ is then given by the sum $$N_{m,m} = \sum_{n_L=0}^{n-m} \frac{(2n)!}{(n_L+m)!(n_L)!(n-n_L)!(n-m-n_L)!}.$$
+
+We now pull out a factor of $\binom{2n}{n}$ and reinterpret the remaining factorials as binomial coefficients, giving $$N_{m,m} = \binom{2n}{n} \sum_{n_L=0}^{n-m} \binom{n}{n_L} \binom{n}{n-m-n_L}.$$
+
+This is in the exact right form needed for Vandermonde's identity, and we arrive at $$N_{m,m} = \binom{2n}{n}\binom{2n}{n-m}.$$ It follows that $$P(X=m,Y=m) = \frac{1}{4^{2n}} \binom{2n}{n}\binom{2n}{n-m}.$$
+
+\subsection{Calculating $P(|X|=|Y|)$}
+
+We'll next calculate $P_1 = P\sum_{m=1}^{n} P(X=m,Y=m)$, then by symmetry (as noted above) our target will be $P(|X|=|Y|) = 4P_1 + P(X=0,Y=0)$. We'll total the paths first, getting
+\begin{align*}
+  N_1 &= \sum_{m=1}^{n} \binom{2n}{n}\binom{2n}{n-m} \\
+  &= \binom{2n}{n} \sum_{m=1}^{n} \binom{2n}{n-m} \\
+  &= \frac{1}{2} \binom{2n}{n} \left(2^{2n} - \binom{2n}{n}\right), \\
+\end{align*}
+with the last equality following from the binomial expansion of $(1+1)^{2n}$ and symmetry. In other words, the sum we're calculating above has the interpretation of $1/2$ the sum of these binomial coefficients (which is $2^{2n}$), with the exception of the central binomial coefficient $\binom{2n}{n}$. We now have $$P_1 = \frac{1}{2} \frac{1}{4^{2n}} \binom{2n}{n} \left(4^{n} - \binom{2n}{n}\right).$$
+
+Putting everything together, we get our final answer:
+\begin{align*}
+  P(|X|=|Y|) &= 4P_1+P(X=0,Y=0) \\
+  &= 4\frac{1}{2}\frac{1}{4^{2n}} \binom{2n}{n} \left(4^{n} - \binom{2n}{n}\right) + \frac{1}{4^{2n}}\binom{2n}{n}\binom{2n}{n} \\
+  &= \frac{1}{4^n} \binom{2n}{n} \left(2 - \frac{1}{4^n} \binom{2n}{n} \right)
+\end{align*}
+
+\section{Fourier Transform Argument}
+
+\subsection{Notes}
+
+This is Gemini's analysis, only slightly edited. I saw the generating function $1/4^{2n} (x+1/x+y+1/y)^{2n}$ immediately, but overlooked the use of an inverse Fourier transform to calculate the probabilities. Note Gemini could also have appealed to the Beta function, rather than the Wallis integral formula. It would also have been in the flavor of the rest of the proof to calculate $P_{X=0,Y=0}$ using a similar approach, rather than a completely different type of argument as it did. Two possibilities would be the cosine sum-to-product formula followed by a change of variables, or applying the binomial expansion and integrating term-by-term.
+
+\subsection{Characteristic Function}
+
+Let $(X_i, Y_i)$ be the random vector for the $i$-th step. The characteristic function of a single step is $\phi(t_1, t_2) = E[e^{i(t_1 X_1 + t_2 Y_1)}]$.
+\[
+\phi(t_1, t_2) = \frac{1}{4} (e^{it_1} + e^{-it_1} + e^{it_2} + e^{-it_2}) = \frac{1}{2} (\cos(t_1) + \cos(t_2))
+\]
+The characteristic function $\Phi(t_1, t_2)$ for the final position $(X, Y)$ after $2n$ steps is:
+\[
+\Phi(t_1, t_2) = [\phi(t_1, t_2)]^{2n} = \left( \frac{\cos(t_1) + \cos(t_2)}{2} \right)^{2n}
+\]
+The probability of ending at a specific point $(a, b)$ is given by the inverse Fourier transform:
+\[
+P(X=a, Y=b) = \frac{1}{(2\pi)^2} \int_{-\pi}^{\pi} \int_{-\pi}^{\pi} \Phi(t_1, t_2) e^{-i(at_1 + bt_2)} dt_1 dt_2
+\]
+
+\subsection{Calculating the Probability $P(|X|=|Y|)$}
+
+The condition $|X|=|Y|$ means $X=Y$ or $X=-Y$. By the principle of inclusion-exclusion:
+\[
+P(|X|=|Y|) = P(X=Y) + P(X=-Y) - P(X=Y \text{ and } X=-Y)
+\]
+The event $\{X=Y \text{ and } X=-Y\}$ occurs if and only if $X=0$ and $Y=0$.
+\[
+P(|X|=|Y|) = P(X=Y) + P(X=-Y) - P(X=0, Y=0)
+\]
+
+\subsubsection{Calculating $P(X=Y)$}
+We sum the probabilities $P(X=k, Y=k)$ over all possible integer values of $k$.
+\begin{align*}
+P(X=Y) &= \sum_k P(X=k, Y=k) \\
+&= \sum_k \frac{1}{(2\pi)^2} \iint_{-\pi}^{\pi} \Phi(t_1, t_2) e^{-ik(t_1+t_2)} dt_1 dt_2 \\
+&= \frac{1}{(2\pi)^2} \iint_{-\pi}^{\pi} \Phi(t_1, t_2) \left( \sum_k e^{-ik(t_1+t_2)} \right) dt_1 dt_2
+\end{align*}
+Using the identity $\sum_k e^{-ik\theta} = 2\pi \delta(\theta)$ (for $\theta \in [-\pi, \pi]$, extended periodically, where $\delta$ is the Dirac delta function):
+\begin{align*}
+P(X=Y) &= \frac{1}{(2\pi)^2} \iint_{-\pi}^{\pi} \Phi(t_1, t_2) (2\pi \delta(t_1+t_2)) dt_1 dt_2 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \Phi(t_1, -t_1) dt_1 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \left( \frac{\cos(t_1) + \cos(-t_1)}{2} \right)^{2n} dt_1 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \left( \frac{2\cos(t_1)}{2} \right)^{2n} dt_1 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \cos^{2n}(t) dt
+\end{align*}
+
+\subsubsection{Calculating $P(X=-Y)$}
+Similarly, $P(X=-Y) = \sum_k P(X=k, Y=-k)$. This involves the sum $\sum_k e^{-ik(t_1-t_2)} = 2\pi \delta(t_1-t_2)$.
+\begin{align*}
+P(X=-Y) &= \frac{1}{2\pi} \int_{-\pi}^{\pi} \Phi(t_1, t_1) dt_1 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \left( \frac{\cos(t_1) + \cos(t_1)}{2} \right)^{2n} dt_1 \\
+&= \frac{1}{2\pi} \int_{-\pi}^{\pi} \cos^{2n}(t) dt
+\end{align*}
+Let $I_n = \frac{1}{2\pi} \int_{-\pi}^{\pi} \cos^{2n}(t) dt$. Then $P(X=Y) = P(X=-Y) = I_n$.
+
+\subsubsection{Evaluating the Integral $I_n$}
+The integral $I_n$ can be evaluated using the Wallis integral formula.
+\[
+I_n = \frac{1}{2\pi} \cdot 2 \int_{0}^{\pi} \cos^{2n}(t) dt = \frac{1}{\pi} \cdot 2 \int_{0}^{\pi/2} \cos^{2n}(t) dt
+\]
+Using $\int_{0}^{\pi/2} \cos^{m}(t) dt = \frac{(m-1)!!}{m!!} \frac{\pi}{2}$ for even $m=2n$:
+\[
+I_n = \frac{2}{\pi} \left( \frac{(2n-1)!!}{(2n)!!} \frac{\pi}{2} \right) = \frac{(2n-1)!!}{(2n)!!}
+\]
+Rewriting using factorials, where $(2n)!! = 2^n n!$ and $(2n-1)!! = \frac{(2n)!}{(2n)!!} = \frac{(2n)!}{2^n n!}$:
+\[
+I_n = \frac{(2n)! / (2^n n!)}{2^n n!} = \frac{(2n)!}{4^n (n!)^2} = \frac{1}{4^n} \binom{2n}{n}
+\]
+
+\subsubsection{Calculating $P(X=0, Y=0)$}
+This is the probability of returning to the origin. Let $n_R, n_L, n_U, n_D$ be the number of steps Right, Left, Up, Down. We need $n_R = n_L = i$ and $n_U = n_D = j$. The total number of steps is $n_R+n_L+n_U+n_D = 2i + 2j = 2n$, which implies $i+j=n$.
+The number of paths $N_{0,0}$ ending at $(0,0)$ is given by summing the multinomial coefficients over possible values of $i$:
+\[
+N_{0,0} = \sum_{i=0}^{n} \frac{(2n)!}{n_R! n_L! n_U! n_D!} = \sum_{i=0}^{n} \frac{(2n)!}{i! i! j! j!} = \sum_{i=0}^{n} \frac{(2n)!}{(i!)^2 ((n-i)!)^2}
+\]
+We can rewrite the term in the sum:
+\[
+\frac{(2n)!}{(i!)^2 ((n-i)!)^2} = \frac{(2n)!}{n!n!} \frac{n!}{i!(n-i)!} \frac{n!}{i!(n-i)!} = \binom{2n}{n} \binom{n}{i}^2
+\]
+So, $N_{0,0} = \binom{2n}{n} \sum_{i=0}^{n} \binom{n}{i}^2$. Using the identity $\sum_{i=0}^{n} \binom{n}{i}^2 = \binom{2n}{n}$:
+\[
+N_{0,0} = \binom{2n}{n} \binom{2n}{n} = \binom{2n}{n}^2
+\]
+The probability is $P(X=0, Y=0) = \frac{N_{0,0}}{4^{2n}}$:
+\[
+P(X=0, Y=0) = \frac{\binom{2n}{n}^2}{4^{2n}} = \left( \frac{1}{4^n} \binom{2n}{n} \right)^2 = I_n^2
+\]
+
+\subsection{Final Result}
+Substituting the expressions for $P(X=Y)$, $P(X=-Y)$, and $P(X=0, Y=0)$ into the inclusion-exclusion formula:
+\[
+P(|X|=|Y|) = P(X=Y) + P(X=-Y) - P(X=0, Y=0)
+\]
+\[
+P(|X|=|Y|) = I_n + I_n - I_n^2 = 2I_n - I_n^2
+\]
+Substituting $I_n = \frac{1}{4^n} \binom{2n}{n}$:
+\[
+P(|X|=|Y|) = 2 \frac{\binom{2n}{n}}{4^n} - \left( \frac{\binom{2n}{n}}{4^n} \right)^2
+\]
+This can also be written as:
+\[
+P(|X|=|Y|) = \frac{1}{4^n} \binom{2n}{n} \left( 2 - \frac{\binom{2n}{n}}{4^n} \right)
+\]
+
+\section*{Example Check: n=3 (6 steps)}
+For $n=3$, we have $2n=6$. $\binom{2n}{n} = \binom{6}{3} = 20$. $4^n = 4^3 = 64$.
+\[
+P(|X|=|Y|) = \frac{20}{64} \left( 2 - \frac{20}{64} \right) = \frac{5}{16} \left( 2 - \frac{5}{16} \right) = \frac{5}{16} \left( \frac{32-5}{16} \right) = \frac{5}{16} \cdot \frac{27}{16} = \frac{135}{256}
+\]
+This matches the result obtained for the specific case of 6 steps.
+
+\end{document}
